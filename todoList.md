@@ -1,11 +1,6 @@
 # TODO LIST
 
 
-
-###  bandwagon: 144.34.223.30
-
-
-
 ## vue
 
 - [ ] Vuex和bus 深入
