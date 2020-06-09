@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Test</title>
+  <style type="text/css">
+    .main {
+      background-color: red;
+      display: inline-flex;
+      /*父div设置该属性*/
+      opacity: 1;
+      transition: 1s;
+    }
+
+    .main:hover {
+      opacity: 0;
+    }
+
+    .main>div {
+      width: 50px;
+      height: 50px;
+      border: 1px solid blue;
+      box-sizing: border-box;
+      /*这是css3属性，如果不懂，请继续往下阅读*/
+      /*float:left;这个属性就不需要了，会自动浮动*/
+    }
+  </style>
+</head>
+
+<body>
+  <span>head</span>
+  <div class="main">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+  <span>foot</span>
+</body>
+<script>
+  function isFunction(foo){
+    return foo==undefined || typeof foo =='function';
+  }
+  function MyPromise(excutor){
+    if(!isFunction(excutor)){
+      throw TypeError("excutor must be function");
+    }
+    
+    this.status = 'pending';  //状态
+    this.change = true;       //状态是否可改
+    this.value = void 0;      //成功值
+    this.reason = void 0;     //错误原因
+    this.resolve = function (val) {
+      return new MyPromise(resolve=>{
+        resolve(val);
+      })
+    }
+    this.reject = function(val) {
+      return new MyPromise((resolve,reject)=>{
+        reject(val);
+      })
+    }
+    this.all = function(promiseArr){
+      for(let p of promiseArr){
+        if(p instanceof MyPromise){
+          if(p.status=='rejected'){
+            return MyPromise.reject(p.reason);
+          }
+        }else{
+          throw TypeError('')
+        }
+      }
+    }
+    //竞争
+    this.race = function(promiseArr){
+
+    }
+
+    let that = this;
+    function resolve (value) {
+      if(!change) return;
+      that.value = value;
+      that.status = 'resolved';
+      that.change = false;
+    }
+    function reject (reason){
+      if(!change) return;
+      that.reason = reason;
+      that.status = 'rejected';
+      that.change = false;
+    }
+    excutor(resolve,reject);
+  }
+
+  MyPromise.prototype.then = function (onResolved,onRejected) {
+    if(!isFunction(onResolved) || !isFunction(onRejected)){
+      //报错 
+      throw TypeError("onResolved and onRejected must be function")
+    }
+    try{
+      if(this.status=='resolved'){
+        let val = onResolved(this.value);
+        return MyPromise.resolve(val);
+      }
+      if(this.status=='rejected'){
+        let val = onRejected(this.reason);
+        return MyPromise.reject(val);
+      }
+    }catch(err){
+      return MyPromise.reject(err);
+    }
+  }
+
+  MyPromise.prototype.catch = function(onRejected) {
+    if(!isFunction(onRejected)){
+      throw TypeError("")
+    }
+    if(this.status=='rejected'){
+      let val = onRejected(this.reason);
+      let p = new MyPromise((resolve,reject)=>{
+        reject(this.reason);
+      })
+    }
+  }
+
+  
+</script>
+
+</html>
