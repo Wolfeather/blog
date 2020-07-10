@@ -38,93 +38,52 @@
   </div>
   <span>foot</span>
 </body>
+
+<!-- <script src="js/myPromise.js"></script> -->
+
 <script>
-  function isFunction(foo){
-    return foo==undefined || typeof foo =='function';
-  }
-  function MyPromise(excutor){
-    if(!isFunction(excutor)){
-      throw TypeError("excutor must be function");
-    }
-    
-    this.status = 'pending';  //状态
-    this.change = true;       //状态是否可改
-    this.value = void 0;      //成功值
-    this.reason = void 0;     //错误原因
-    this.resolve = function (val) {
-      return new MyPromise(resolve=>{
-        resolve(val);
-      })
-    }
-    this.reject = function(val) {
-      return new MyPromise((resolve,reject)=>{
-        reject(val);
-      })
-    }
-    this.all = function(promiseArr){
-      for(let p of promiseArr){
-        if(p instanceof MyPromise){
-          if(p.status=='rejected'){
-            return MyPromise.reject(p.reason);
-          }
-        }else{
-          throw TypeError('')
-        }
-      }
-    }
-    //竞争
-    this.race = function(promiseArr){
-
-    }
-
-    let that = this;
-    function resolve (value) {
-      if(!change) return;
-      that.value = value;
-      that.status = 'resolved';
-      that.change = false;
-    }
-    function reject (reason){
-      if(!change) return;
-      that.reason = reason;
-      that.status = 'rejected';
-      that.change = false;
-    }
-    excutor(resolve,reject);
-  }
-
-  MyPromise.prototype.then = function (onResolved,onRejected) {
-    if(!isFunction(onResolved) || !isFunction(onRejected)){
-      //报错 
-      throw TypeError("onResolved and onRejected must be function")
-    }
-    try{
-      if(this.status=='resolved'){
-        let val = onResolved(this.value);
-        return MyPromise.resolve(val);
-      }
-      if(this.status=='rejected'){
-        let val = onRejected(this.reason);
-        return MyPromise.reject(val);
-      }
-    }catch(err){
-      return MyPromise.reject(err);
-    }
-  }
-
-  MyPromise.prototype.catch = function(onRejected) {
-    if(!isFunction(onRejected)){
-      throw TypeError("")
-    }
-    if(this.status=='rejected'){
-      let val = onRejected(this.reason);
-      let p = new MyPromise((resolve,reject)=>{
-        reject(this.reason);
-      })
-    }
-  }
-
+  let log = console.log
   
+  // let p1 = new Promise((resolve,reject)=>{
+  //   setTimeout(()=>{
+  //     reject(1);
+  //   },200)
+  // })
+  // let p2 = new Promise((s,j)=>{
+  //   setTimeout(() => {
+  //     s(2)
+  //   }, 300);
+  // })
+  // let p3 = new Promise((s,j)=>{
+  //   setTimeout(() => {
+  //     j(3);
+  //   }, 1000);
+  // })
+
+  // let p4 = Promise.resolve(p3);
+  // let p5 = Promise.resolve(4);
+  // p4.then(v=>log(v),r=>log('err:',r));
+  // p5.then(v=>log(v),r=>log(r));
+
+
+
+  function f1 (){
+    return new Promise((resolve,reject)=>{
+      setTimeout(() => {
+        resolve(7)
+      },1000);
+    })
+  }
+
+  async function f2(){
+    let res = await f1();
+    log(res)
+    log('fff2')
+  }
+  // let res = f1();
+  // res.then(v=>log(v),r=>log('err:',r));
+  f2();
+  log('fff')
 </script>
 
 </html>
