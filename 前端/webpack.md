@@ -1,6 +1,6 @@
 ## 前言
 
-webpack作为优秀的打包工具，在vue、react等开发工具的脚手架中已经配置好了。之前只是粗略查看过，近期通过视频系统学习了一下webpack。做一下学习总结📘，以便于以后的查漏补缺。
+webpack作为优秀的打包工具，在vue、react等开发工具的脚手架中已经配置好了。之前只是粗略查看过，近期通过视频和官方文档恶补了一下webpack。做一下学习总结📘，以便于以后的查漏补缺。
 🙏🙏最后在此鸣谢尚硅谷提供的学习资料：https://www.bilibili.com/video/BV1e7411j7T5
 
 ## webpack简介 
@@ -85,8 +85,9 @@ npm install webpack webpack-cli -g/-D
 
 ```js
 function resolve(dir) {
-  return path.join(__dirname, dir)
-  // 当config.js在子目录下时 要改成： path.join(__dirname,'..',dir)
+	return path.join(__dirname, dir)
+	// 当config.js在子目录下时要加上'..'回退到顶级目录
+	//改成： path.join(__dirname,'..',dir)
 }
 ```
 
@@ -148,22 +149,66 @@ output: {
 	// 非入口chunk由 js中import()引入 和 config.js中的optimization配置项 两种方法生成
 	// 如果不用chunkFilename，命名将变为0,1,2...
 	chunkFilename: '[name]_chunk.js',
+	// 将bundle向外暴露 
+	library: '[name]'
+	// 设置暴露bundle的目标 默认值为'var'
+	// this/window
+	// window
+	// global
+	// commonjs
+	libraryTarget: ''
 }
 ```
+想看libraryTarget更细节的地方请查阅官方文档：https://www.webpackjs.com/configuration/output/#output-librarytarget
 
 
 
 ### module
 
 ```js
-module: [
-  
-]
+module: {
+	rules: [
+		// 这里写匹配规则
+		{
+			test: /\.css/,
+			// 多个loader用use：数组，数组内可以试loader名字(字符串)和loader详情(对象)
+			use: ['style-loader','css-loader'],
+			// 上面等价于下面  
+			/* use: [
+				{
+					loader: 'style-loader'
+				},
+				{
+					loader: 'css-loader'
+				}
+			] */
+		},
+		{
+			test: /\.js$/,
+			// 排除掉的文件
+			exclude: /node_modules/,
+			// 只包括的文件
+			include: resolve('src'),
+			// 执行顺序 默认为普通loader
+			// 'pre' 置前  'post' 置后
+			enforce: 'pre',
+			// 单个loader用loader
+			loader: 'eslint-loader'
+		},
+		{
+			//oneOf中的配置只会匹配成功一次
+			oneOf: [
+				//...
+			]
+		}
+	]
+}
 ```
 
 
 
-### resolve-解析模块的规则
+### resolve
+用于解析模块的规则
 
 ```js
 resolve: {
@@ -173,9 +218,9 @@ resolve: {
 		'$css': resolve('src/css')
 	},
 	//省略文件路径后缀名
-	//注意：同路径下的同名文件不能都省略
+	//❗注意：同路径下的同名文件不能都省略
 	extensions: ['.js',',json'],
-	// 模块目录  默认是当前目录的node_modules
+	// 设置模块目录  默认是当前目录的node_modules
 	// 如果找不到 则往上层文件夹找node_modules
 	modules: [resolve('{你的node_modules路径}')'node_modules']
 }
@@ -318,7 +363,7 @@ module: {
 		},
 		{
 			test: /\.sass$/
-			// 注意 loader是从后往前执行，所以最外层的sass-loader要写在最后。
+			// ❗注意 loader是从后往前执行，所以最外层的sass-loader要写在最后。
 			use: [
 				'style-loader',
 				'css-loader',
@@ -445,7 +490,7 @@ devServer: {
 
 命令行中输出的代码看起来是不是很眼熟？没错，vue和react的脚手架就自带了webpack-dev-server，启动方式实质上就是它！
 
-注意：通过该方式部署后不会将bundle输出，而是放在缓存中。
+❗注意：通过该方式部署后不会将bundle输出，而是放在缓存中。
 
 ## 生产环境配置
 
@@ -622,7 +667,7 @@ module: {
 
 ### js兼容性处理
 
-**todo:这块还没吃透，下来要温习。**
+** 📄todo:这块还没吃透，下来要温习。**
 
 下载依赖包
 
@@ -713,7 +758,7 @@ plugins: [
 
 ## webpack性能优化
 
-​	
+
 
 ### HMR 
 
@@ -791,40 +836,195 @@ rules: [
 
 ### tree shaking 
 
-树摇，顾名思义，将没有用到的叶子(代码)摇掉。从而达到减少。
+摇树，顾名思义，将没有用到的叶子(代码)摇掉。从而达到减少。
 
-在webpack4中的树摇还有一定的bug，例如多层嵌套调用时，就不会进行树摇。webpack5会进一步优化树摇的算法并解决这个问题。
+摇树的前提：
 
+1. 必须使用ES6模块化
+2. mode: 'production'
 
+在webpack4中的摇树还有一定的bug，例如
+```js
+//a.js
 
-todo
+```
+多层嵌套调用时，就不会进行摇树。webpack5会进一步优化摇树的算法并解决这个问题。
 
-
-
-
+如果我们的所有代码都无副作用，可以简单将sideEffects标记为false
+```json
+// in package.json
+{
+	// ...
+	"sideEffects" : false
+}
+```
+但是往往这一点很难做到。例如polyfill等工具，它影响着全局，但是不提供输出。此时tree shaking就会误判。如果js中引入了css文件，同样存在这样的问题。
+所以我们要将有副作用的代码排除在检测外。
+```json
+// in package.json
+{
+	// ...
+	"sideEffects" : [
+		"./src/xxx.js",
+		"*.css"
+	]
+}
+```
 
 ### code split 
 
-将太大的js文件拆分，通过并行加载提高页面加载速度
+将太大的js文件拆分，通过并行加载提高页面加载速度。
 
-- 多入口拆分
+
+
+- 多入口拆分 (entry方式3)  人为拆分
 - 通过opimizination拆分  
   - node_modules
   - 单入口打包
-- import导入的都可以进行按需加载分隔代码
+- import()导入的都可以进行按需加载分隔代码
+
+#### 1.多入口拆分
+
+这种方式是人为拆分，一般情况下当我们需要按功能拆分时才会这么做。
+
+```js
+// webpack.config.js
+{
+	entry: {
+		a: 'src/js/a.js'
+		b: 'src/js/b.js'
+	},
+	output: {
+		filename: 'js/[name].[ext]',
+	}
+}
+
+// a.js
+import c from './c.js'
 
 
+// b.js
+import c from './c.js'
+```
+❗如果入口a.js、b.js都引入了c.js，那么在打包的时候，c.js会重复打包
 
-todo
+#### optimization的splitChunks
+这时候我们尝试使用 optimization的splitChunks
+```js
+optimization: {
+	splitChunks: {
+		// 1.将node_modules中的代码单独打包成一个
+		// 2.自动分析多入口中的公共依赖，找到并单独打包
+		chunks: 'all'
+	}
+}
+```
+
+#### import()
+通过import()引入的文件，在打包时一定会被单独打包。
+```js
+//a.js
+import(/* webpackChunkName: 'c' */ './c.js').then(
+	result => {
+		//...
+	}).catch(()=>{
+		//...
+	})
+```
+a中引入了c，但是c会被单独打包出来。
+❗如果不写`/* webpackChunkName: 'c' */`输出的bundle将会以0,1,2...命名
 
 ### 懒加载/预加载 
+现在文件如下
+```js
+// b.js
+console.log('b被加载了')
+function b(){
+	console.log('bbbbb');
+}
+export {b};
 
-todo
-
-
+// a.js
+console.log('a被加载了')
+import {b} from './b.js'
+setTimeout(() => {
+	b()
+}, 1000)
+```
+a为入口文件，引入了b。打开打包后的HTML文件，控制台console
+```
+a被加载了
+b被加载了
+//1s later
+bbbbb
+```
+❗这样就会有一个问题，b是1s后才用到的，但是提前加载了。这样会影响效率。
+所以通过import()的方式启用懒加载
+```js
+// b.js不变
+// a.js
+console.log('a被加载了')
+import {b} from './b.js'
+setTimeout(() => {
+	import('./b.js').then(
+		({b}) => {
+			b()
+		}
+	)
+}, 1000)
+```
+重新打包后打开页面查看打印台
+```
+a被加载了
+//1s later
+b被加载了
+bbbbb
+```
+如此一来就实现了对b.js的懒加载/预加载。
 
 ### PWA 
 
+PWA(Progressive Web App)，渐进式网页应用，让网页像app一样离线了也能访问。
+
+下载插件
+
+```powershell
+npm i workbox-webpack-plugin -D
+```
+
+编辑配置文件
+
+```js
+// webpack.config.js
+plugins: [
+	new WorkboxWebpackPlugin.GenerateSW({
+		/*
+			1. 帮助sw快速启动
+			2. 删除旧的sw
+
+			生成一个sw配置文件
+		*/
+		clientClaim: true,
+		skipWaiting: true
+	})
+]
+
+// entry.js
+// 注册sw 处理兼容性问题
+if('serviceworker' in navigator){
+	window.addEventListener('load', () => {
+		navigator.serviceworker
+			.register('/service-worker.js')
+			.then(() => {
+				console.log('sw注册成功')
+			})
+			.catch(() => {
+				console.log('sw注册失败')
+			})
+	})
+}	
+```
+❗ 如果用了eslint和sw，一定要将eslint中的package.json中的配置加上，否则检查时会报错。
 
 
 ### 多进程打包 
