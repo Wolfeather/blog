@@ -1,6 +1,6 @@
 ## 前言
 
-webpack作为优秀的打包工具，在vue、react等开发工具的脚手架中已经配置好了。之前只是粗略查看过，近期通过视频和官方文档恶补了一下webpack。做一下学习总结📘，以便于以后的查漏补缺。
+webpack作为优秀的打包工具，在vue、react等开发工具的脚手架中已经配置好了。之前只是粗略查看过，近期通过视频和官方文档恶补了一下webpack。做一下学习总结、知识自理📘，以便于以后的查漏补缺。
 🙏🙏最后在此鸣谢尚硅谷提供的学习资料：https://www.bilibili.com/video/BV1e7411j7T5
 
 ## webpack简介 
@@ -56,7 +56,7 @@ webpack作为优秀的打包工具，在vue、react等开发工具的脚手架�
 
 
 
-## webpack基本使用
+## 基本使用
 
 ### 如何使用？
 
@@ -326,7 +326,7 @@ optimization: {
 
 
 
-## webpack开发环境配置
+## 开发环境配置
 
 ### 处理样式
 
@@ -756,7 +756,7 @@ plugins: [
 
 
 
-## webpack性能优化
+## 性能优化
 
 
 
@@ -982,9 +982,9 @@ bbbbb
 ```
 如此一来就实现了对b.js的懒加载/预加载。
 
-### PWA 
+### *PWA 
 
-PWA(Progressive Web App)，渐进式网页应用，让网页像app一样离线了也能访问。
+PWA(Progressive Web App)，渐进式网页应用，让网页像app一样离线了也能访问。详细情况查看官方文档：https://webpack.docschina.org/guides/progressive-web-application/#root
 
 下载插件
 
@@ -1011,10 +1011,9 @@ plugins: [
 
 // entry.js
 // 注册sw 处理兼容性问题
-if('serviceworker' in navigator){
+if('serviceWorker' in navigator){
 	window.addEventListener('load', () => {
-		navigator.serviceworker
-			.register('/service-worker.js')
+		navigator.serviceworker.register('/service-worker.js')
 			.then(() => {
 				console.log('sw注册成功')
 			})
@@ -1027,33 +1026,120 @@ if('serviceworker' in navigator){
 ❗ 如果用了eslint和sw，一定要将eslint中的package.json中的配置加上，否则检查时会报错。
 
 
-### 多进程打包 
+
+
+### *多进程打包 
 
 顾名思义，启动多进程进行打包。
 
 但是启动进程有消耗(约600ms)，并且进程之间通信也有消耗，所以如果使用不当反而会增加开销。
 
+下载包
+
 ```powershell
 npm i thread-loader -D
 ```
 
+修改配置文件
+
+```js
+	{
+		test: /\.js$/,
+		exclude: /node_modules/,
+		// loader: 'babel-loader', // 添加thread-loader
+		use: [
+			// 'thread-loader',  //默认进程数为电脑核数-1
+			{
+				loader: 'thread-loader',
+				options: {
+					workers: n //设置进程个数
+				}
+			},
+			'babel-loader'
+		]
+	}
+```
 
 
-### externals 
 
-让一些文件不打包，以外联的方式引入
+### *externals 
+
+排除掉一些不用打包的文件。https://webpack.docschina.org/configuration/externals/#root
+❗注意：当正在被使用的包被排除掉以后，一定要记得用其他方式(外联/DLL)重新引入，否则将会出错
 
 配置文件
 
 ```js
 externals: {
+	// 忽略
   jquery: 'jQuery'
 }
 ```
 
 
 
-### DLL 
+### *DLL 
 
 让一些文件单独打包引入。
+新建dll配置文件
+```js
+// wbepack.dll.js
+// 使用dll，对某些第三方库进行单独打包
+const webpack = require('webpack')
+// 公共方法 resolve
 
+module.exports = {
+	entry: {
+		//
+		jquery: ['jquery' /* , xxx*/]
+	},
+	output: {
+		filename: '[name].js',
+		path: resolve('dll'),
+		library: '[name]_[hash]',
+	},
+	plugins: [
+		// 打包生成一个manifest.son -> 提供一个需要打包的文件的映射关系
+		new webpack.DllPlugin({
+			name: '[name]_[hash]', //映射库的暴露内容的名称
+			path: resolve('dll/manifest.json')  //输出路径
+		})
+	]
+}
+```
+最后运行webpack打包指令时，指向dll文件：
+```powershell
+webpack --config webpack.dll.js
+```
+打包后，以后就只用引入打包好的dll文件就行了。
+下载插件
+```powershell
+npm i add-asset-html-webpack-plugin -D
+```
+修改webpack配置文件
+```js
+const webpack = require('webpack')
+
+module.exports = {
+	//...
+	plugins: [
+		//...
+		// 排除掉一些不用打包的文件 
+		new webpack.DllReferencePlugin({
+			manifest: resolve('dll/manifest.json')
+		}),
+		// 将某个文件打包出去，并在html中自动引入该资源
+		new AddAssetHtmlWebpackPlugin({
+			filepath: resolve('dll/jquery.js')
+		})
+	]
+}
+```
+DLL看起来比较复杂：
+1. 先把a文件写在DLL配置文件中。 (生成了manifest.json)
+2. 在webpack配置文件中用**DllReferencePlugin**将a排除打包。(通过在manifest.json查找)
+3. 在webpack配置文件中用**AddAssetHtmlWebpackPlugin**将第一步打包的a文件copy一份到build中，并引入到HTML中。
+
+## 总结
+
+webpack配置太多太多，不仅配置多，还存在很多的plugin、loader。优先记住最常用的和基本的配置。其他的配置在用的时候多查阅官方文档即可。官方文档写的十分详细。
