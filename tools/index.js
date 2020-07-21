@@ -4,9 +4,10 @@
  * @Author: wolfeather
  * @Date: 2020-07-20 17:36:20
  * @LastEditors: wolfeather
- * @LastEditTime: 2020-07-20 17:38:57
+ * @LastEditTime: 2020-07-21 09:29:53
  */ 
 (function(window){
+  // 防抖
   var debounce = function (fn,wait,immediate){
     let timeout
     return function(){
@@ -28,6 +29,7 @@
       }, wait);
     }
   }
+  // 节流
   var throttle = function (fn,wait,type){
     let timeout
     let pre = 0
