@@ -1,0 +1,198 @@
+<!--
+ * @Descripttion: 
+ * @version: 
+ * @Author: wolfeather
+ * @Date: 2020-06-09 19:23:01
+ * @LastEditors: wolfeather
+ * @LastEditTime: 2020-07-24 14:33:13
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Test</title>
+	<style type="text/css">
+		.image-item {
+			display: block;
+			margin-bottom: 50px;
+			height: 500px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="c">
+		<button id="themeBtn">点击变换主题</button>
+		<p>媒体查询测试</p>
+		<p class="big-screen">如果小于960px，就看不到这段话</p>
+
+	</div>
+	<!-- <img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/原型链1.png" />
+	<img class="image-item" data-original="imgs/原型链2.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" />
+	<img class="image-item" data-original="imgs/代理.png" /> -->
+</body>
+
+<style>
+	
+	@media screen and (max-width:960px) {
+		p {
+			font-size: 14px;
+			transition:1s ease
+		}
+		.big-screen{
+			display: none;
+		}
+	}
+
+	@media screen and (min-width:960px){
+		p{
+		font-size: 20px;
+		transition:1s ease
+	}
+	.big-screen{
+		display: auto;
+	}
+	}
+
+	.light-theme {
+		--bg-color:white;
+		--font-color:#000;
+	}
+	.dark-theme {
+		--bg-color:#323336;
+		--font-color:#dfdfdf;
+	}
+	
+
+	body{
+		background-color: var(--bg-color);
+		transition:1s ease;
+		color: var(--font-color);
+	}
+</style>
+
+<script src="./tools/index.js"></script>
+<script>
+	const changeTheme = themeName =>{
+		log(themeName)
+		document.documentElement.className = themeName+"-theme";
+	}
+	const dark ='dark' , light = 'light'
+	//拿到媒体查询
+	let darkMedia = window.matchMedia('(prefers-color-scheme: dark)')
+	changeTheme(darkMedia.matches?dark:light)
+	darkMedia.addListener(e=>{
+		const darkOn = e.matches
+		changeTheme(darkOn?dark:light)
+	})
+	let themeBtn = document.getElementById('themeBtn');
+	
+	themeBtn.onclick = function() {
+		const darkOn = document.documentElement.className.includes(light)
+		changeTheme(darkOn?dark:light)		
+	}
+
+</script>
+<script>
+	var viewHeight = document.documentElement.clientHeight
+
+	function lazyLoad() {
+		let eles = document.querySelectorAll('img[data-original]')
+		eles.forEach((item, index) => {
+			// 如果已经加载过  则跳过
+			if (!item.dataset.original) return
+			let rect = item.getBoundingClientRect();
+			// 如果在屏幕内 则加载
+			if (rect.bottom >= 0 && rect.top < viewHeight) {
+				let img = new Image()
+				img.src = item.dataset.original
+				img.onload = function () {
+					item.src = img.src
+				}
+				item.removeAttribute("data-original")
+			}
+		})
+	}
+	// 先触发一次 将首页的图片加载
+	lazyLoad()
+	document.addEventListener('scroll', throttle(lazyLoad, 1000, true))
+
+	function* f1() {
+		log('阶段1')
+		let i1 = yield 1
+		log('阶段2')
+		let i2 = yield 2
+		log('阶段3')
+		return 3
+	}
+
+	log(f = f1());
+	log(f.next());
+	// log(f.next());
+	// log(f.next());
+
+	// function* f2(){
+	// 	log('f2')
+	// }
+	// f=f2()
+	// f.next()
+</script>
+<script>
+Function.prototype.bind2 = function(newThis){
+	if (typeof this !== 'function') return 
+	let that = this
+	// 此时arguments是绑定时的参数
+	let args = Array.prototype.slice.call(arguments,1)
+	let nullFn = function(){}
+	let bindFn = function(){
+		let _this = this instanceof that?this:newThis
+		// 此时arguments是调用时的参数
+		return that.apply(_this,args.concat(Array.prototype.slice.call(arguments)))
+	}
+	if(that.prototype){
+		nullFn.prototype = this.prototype
+	}
+	bindFn.prototype = new nullFn()
+	return bindFn
+}
+Function.prototype.bind3 = function(newThis){
+	if (typeof this !== 'function') return 
+	let that = this
+	// 此时arguments是绑定时的参数
+	let args = Array.prototype.slice.call(arguments,1)
+	let bindFn = function(){
+		// 如果是new this指向自己，此时原函数在原型链上， 此时就用本身的this
+		// 如果不是new 才用bind的this
+		let _this = this instanceof that?this:newThis
+		// 此时arguments是调用时的参数
+		return that.apply(_this,args.concat(Array.prototype.slice.call(arguments)))
+	}
+	if(that.prototype){
+		// 如果是构造函数 则添加原函数到原型链
+		bindFn.prototype = new that()
+	}
+	return bindFn
+}
+
+function foo(name){
+	this.name = name;
+}
+let obj2 = {} , obj3 = {}
+let bar2 = foo.bind2(obj2) , bar3 = foo.bind3(obj3)
+bar2('bind2')
+bar3('bind3')
+let ace = new bar2('ace') , sabo = new bar3('sabo')
+log('ace',ace)
+log('sabo',sabo)
+</script>
+</html>

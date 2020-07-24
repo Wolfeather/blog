@@ -326,3 +326,318 @@ todo  nodejs
 - 使用外部js、css
 - 避免重定向
 - 图片懒加载
+
+## js语言特性
+
+- 运行在客户端浏览器上
+- 不用预编译，直接解析执行代码
+- 弱类型语言，较为灵活
+- 与操作系统无关，跨平台。
+- 脚本语言，解释性语言
+
+## 判断是否是数组
+
+```js
+let arr = [1,2,3]
+arr instanceof Array	// true
+arr.constructor === Array	// true
+Array.isArray(arr)	// true
+Object.prototype.toString.call(arr)	// "[object Array]"
+```
+
+
+
+### instanceof
+
+a instanceof B 是看B的原型是否a的原型链上。也就是：看a.proto是否等于B.prototype，如果不等，再看a.proto.proto...直到原型链尽头。
+
+缺陷：如果页面中有多个iframe，就存在多个全局环境，那就回存在不同的Array构造函数。iframe2中的数组在iframe1中，用instanceof判断就会有问题。
+
+### constructor
+
+constructor：查看构造函数。
+
+缺陷：
+
+1. constructor属性也在proto上，所以instanceof有的问题constructor也有。 
+2. 可以给对象赋予自身的constructor属性
+
+```js
+let obj = {}
+obj.constructor = Array
+obj.constructor === Array	// true
+```
+
+### isArray()
+
+简单明了：判断是否是数组
+
+缺陷： 可能有些浏览器未实现该功能
+
+### Object.prototype.toString
+
+需要将返回的字符串结果进行处理一下。
+
+## js数据类型
+
+基本类型： String、Number、Boolean、Null、Undefined、Symbol(ES6)
+
+引用数据类型：Object、Array、Function
+
+## 数组去重
+
+### indexOf遍历去重
+```js
+function fn1(arr){
+	let res = []
+	for(let i=0;i<arr.length;i++){
+		if(arr.indexOf(arr[i])==i) res.push(arr[i])
+	}
+	return res
+}
+```
+### Object键值对去重
+```js
+function fn2(arr){
+	let res = [] , obj = {}
+	for(let n of arr){
+		// 如果是'1'和1都存在  就会有问题 改为
+		// obj[typeof n + n]
+		if(!obj[typeof n + n]){
+			obj[typeof n + n]=true
+			res.push(n)
+		}
+	}
+	return res
+}
+```
+### 利用Set去重
+```js
+function fn3(arr){
+	// return Array.from(new Set(arr))
+	return [...new Set(arr)]
+}
+```
+
+## 编程题 
+### 1 编写函数 满足以下条件
+```js
+Hero("37er")
+// Hi! This is 37er
+Hero("37er").kill(1).recover(30)
+// Hi! This is 37er 
+// Kill 1 bug
+// Recover 30 bloods
+Hero("37er").sleep(10).kill(2)
+// Hi! This is 37er
+// 10s后
+// Kill 2 bugs
+```
+思路：
+1. 函数Hero执行完后还能继续点函数，说明返回了一个对象，对象中有函数`kill、sleep、recover`。
+2. 函数能链式调用，说明每次执行了内部函数后都要返回对象
+```js
+function Hero(str) {
+	let o = {
+		name: `Hi! This is ${str}`,
+		wait: 0
+	}
+	console.log(o.name);
+	o.kill = function (bugs) {
+		setTimeout(() => {
+			console.log(`Kill ${bugs} bug${bugs>1?'s':''}`)
+		}, o.wait * 1000);
+		return o
+	}
+	o.recover = function (bloods) {
+		setTimeout(() => {
+			console.log(`Recover ${bloods} bloods`)
+		}, o.wait * 1000);
+		return o
+	}
+	o.sleep = function (seconds) {
+		o.wait = seconds
+		return o
+	}
+	return o
+}
+```
+
+## vue生命周期
+
+- beforeCreate：`data、$el`都没有初始化。可以加loading事件。
+- created：data初始化完成，但是`$el`没有初始化。调用异步请求、函数自执行。
+- beforeMount：`data、$el`初始化完成，但是dom未加载完成。
+- mounted：dom挂载已完成。
+- beforeUpdate：当触发了重新渲染VDOM到DOM前调用。
+- updated：当渲染结束后调用。不要在此修改data，否则会死循环。
+- beforeDestroy：实例销毁前的调用。可做删除/退出提示
+- destroyed：实例销毁后的调用。
+- *activated：`keep-alive`独有。切换组件为激活状态时调用。
+- *deactivated：`keep-alive`独有。切换组件为非激活状态时调用。
+
+当有子组件时：
+
+```
+parent:beforeCreate
+parent:created
+parent:beforeMount
+t1:beforeCreate
+t1:created
+t1:beforeMount
+t2:beforeCreate
+t2:created
+t2:beforeMount
+t1:mounted
+t2:mounted
+parent:mounted
+```
+
+父组件执行到`beforeMount`，然后子组件开始执行，子组件执行到`beforeMount`，执行子组件的兄弟组件。当子组件们都执行完，在按顺序执行`mounted`，最后执行父组件的`mounted`。
+
+## Symbol
+
+Symbol是唯一的标识。每个Symbol都是唯一的，值只是描述，为了方便区分。
+
+当Symbol作为对象的属性时，只有`Object.getOwnPropertySymbols()`和`Reflect.ownKeys()`能访问到symbol属性
+
+## 用闭包写一个单例模式
+
+```js
+function single(){
+	var obj
+	function Singleton(name){
+		if(obj){
+			return obj
+		}
+		this.name = name
+		return obj = this
+	}
+	Singleton.prototype.getName = function () {
+		return this.name
+	}
+	return Singleton
+}
+let Singleton = single()
+let a = new Singleton('a')
+let b = new Singleton('b')
+console.log(a.name)	// 'a'
+console.log(b.name)	// 'a'
+console.log(a===b)	// true
+```
+
+## 异步调用
+
+### Promise
+
+解决回调地狱
+
+```js
+let p = new Promise((resolve,reject)=>{
+	// 同步执行
+})
+p.then(res=>{
+	// resolve后异步执行
+},reason=>{
+	// reject后异步执行
+}).then(res=>{
+	// 可链式调用
+}).catch(reason=>{
+	// 异常透传 可以最后在捕获
+})
+```
+### generator
+generator作用：
+1. 可以分段执行，可以暂停
+2. 可以控制阶段和每个阶段的返回值
+3. 可以知道是否执行到结婚
+4. generator函数执行后 可以被迭代器迭代`for(let s of g()){}`
+5. yield后跟generator函数的话要加*
+
+### async await
+> async函数是generator函数的语法糖 
+
+async修饰函数
+await修饰函数内的异步操作(往往是promise对象)，等待操作结束后再继续执行
+
+## 驼峰和下划线转换
+```js
+function toTop(name){
+	return name.replace(/\_(\w)/g,function(all,letter){
+		return letter.toUpperCase()
+	})
+}
+function toLine(name){
+	return name.replace(/([A-Z])/g,"_$1").toLowerCase()
+}
+```
+
+## string的startsWith和indexOf的区别
+
+```js
+let str1 = "wolfeather" , str2 = "feather"
+// str1中str2首次出现的位置(没有就返回-1)
+let position = str1.indexOf(str2)	// 3
+// str1的第postition位，是否是以str2开头  返回Boolean
+str1.startsWith(str2,position)	//true
+```
+
+## js字符串转数字
+
+```js
+let str = '123.456'
+Number(str)	// 123.456
+// Number最慢 不建议使用
+parseFloat(str) // 123.456
+parseFloat("0xFF") // 0
+// parseFloat在不转换16进制的情况下 推荐使用
+parseInt(str,10) // 123  进制不传默认为10
+// parseInt 仅适用于整数
+~~str	// 123  
+// 按位非 仅适用于整数
+str*1	// 123.456
+str/1	// 123.456
+str-0 // 123.456
++str // 123.456
+// 运算符 推荐使用
+```
+
+## setTimeout和Promise执行顺序
+
+先执行同步代码，再执行微队列，再执行宏队列(每执行完一个宏任务，都要重新检查微队列)
+
+## 手写一个bind
+
+```js
+Function.prototype.bind2 = function(newThis){
+	if (typeof this !== 'function') return 
+	let that = this
+	// 此时arguments是绑定时的参数
+	let args = Array.prototype.slice.call(arguments,1)
+	return  function(){
+		// 此时arguments是调用时的参数
+		return that.apply(newThis,args.concat(Array.prototype.slice.call(arguments)))
+	}
+}
+```
+这个写法有点问题，就是new的时候。所以要判断new的时候this的指向
+```js
+Function.prototype.bind3 = function(newThis){
+	if (typeof this !== 'function') return 
+	let that = this
+	// 此时arguments是绑定时的参数
+	let args = Array.prototype.slice.call(arguments,1)
+	let bindFn = function(){
+		// 如果是new this指向自己，此时原函数在原型链上， 此时就用本身的this
+		// 如果不是new 才用bind的this
+		let _this = this instanceof that?this:newThis
+		// 此时arguments是调用时的参数
+		return that.apply(_this,args.concat(Array.prototype.slice.call(arguments)))
+	}
+	if(that.prototype){
+		// 如果是构造函数 则添加原函数到原型链
+		bindFn.prototype = new that()
+	}
+	return bindFn
+}
+```
