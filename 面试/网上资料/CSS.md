@@ -1,10 +1,10 @@
-## 如何画一个三角形
-
-
-
 ## CSS盒模型
 
+分为标准盒模型和怪异盒模型
 
+标准盒模型的长宽 代表内容的长宽
+
+怪异盒模型的长宽 代表内容+padding+border的长宽
 
 ## BFC
 
@@ -20,15 +20,83 @@
 
 ## transition和animation的区别
 
+transition和animation的属性值都相同
+
+|            | 名称     | 条件                 | 立即执行                       | 循环播放           |
+| ---------- | -------- | -------------------- | ------------------------------ | ------------------ |
+| transition | 过渡动画 | 需要触发条件         | 不能立即执行，需要等待触发条件 | 只能触发时播放一次 |
+| animation  | 动画     | 需要搭配`@keyframes` | 可以立即执行                   | 可以循环播放       |
+
 
 
 ## flex布局
 
+[查看详情](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)
 
+### flex的使用条件
+
+父元素样式：
+
+```css
+.father {
+	display: flex;
+	display: -webkit-flex; // 兼容webkit浏览器
+	// display: inline-flex; // 行内元素使用flex布局
+}
+```
+
+### 父元素属性
+
+- flex-direction（排序）： row（默认，按行排列）| row-reverse（倒序行排列）| column（按列排列）| columen-reverse（倒序列排列） 
+- flex-wrap（是否换行）：nowrap（默认，不换行）| wrap（换行）| wrap-reverse（换行，且倒序行）
+- flex-flow（上面两个属性的合并）： {flex-direction} {flex-wrap} 
+- justify-content（横向对齐方式）： flex-start（默认，左对齐）| flex-end（右对齐）| center（居中）| space-between（两端对齐，等间距）| space-around（每个子元素间隔相等且不塌陷/左右两端间隔n，元素间间隔2n）
+- align-items（纵向对齐方式）：stretch（默认，自动延伸高度）| flex-start（上对齐）| flex-end（下对齐）| center（居中）| baseline（以第一行文字为基准线）
+- align-content（多轴线对齐方式，只有一行则不生效）：stretch（默认，自动延伸高度）| flex-start（上对齐）| flex-end（下对齐）| center（居中）| space-between（轴线对齐两端，等间距）| space-around（轴线间隔相等且不塌陷）
 
 ## 垂直居中的方法
 
-
+### 方法一：table-cell
+设置给父元素，然后子元素实现了垂直居中
+```css
+.content{
+	display: table-cell;
+	vertical-align: middle;	/* 垂直居中 */
+	text-align: center;	/* 水平居中 */
+}
+```
+### 方法二：flex布局
+这个也是设置到父元素，然后子元素实现垂直居中
+```css
+.content{
+	display: flex;
+	justify-content: center;	/* 水平居中 */
+	item-aligns: center;	/* 垂直居中 */
+}
+```
+### 方法三：position + 负边距 (已知宽高)
+absolute绝对定位后，用left,top对元素定位，定位点是元素的左上角。所以此时左上角处于正中心，所以需要向左向上移动半个宽高。已知宽高的情况用margin就能实现。
+```css
+.content{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	height:200px;
+	width:200px;
+	margin-top:-100px;
+	margin-left:-100px;
+}
+```
+### 方法四：position + transform
+同上理，未知宽高时也能做到，不过要用到transform，移动-50%的距离来实现。
+```css
+.content {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%)
+}
+```
 
 ## js动画和css3动画的差异性
 

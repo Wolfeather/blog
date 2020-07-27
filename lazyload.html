@@ -4,7 +4,7 @@
  * @Author: wolfeather
  * @Date: 2020-06-09 19:23:01
  * @LastEditors: wolfeather
- * @LastEditTime: 2020-07-24 14:33:13
+ * @LastEditTime: 2020-07-27 18:57:32
 -->
 <!DOCTYPE html>
 <html lang="en" class="dark-theme">
@@ -18,15 +18,20 @@
 			margin-bottom: 50px;
 			height: 500px;
 		}
+.content {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%)
+}
 	</style>
 </head>
 
 <body>
-	<div id="c">
+	<div id="c" class="content">
 		<button id="themeBtn">点击变换主题</button>
 		<p>媒体查询测试</p>
 		<p class="big-screen">如果小于960px，就看不到这段话</p>
-
 	</div>
 	<!-- <img class="image-item" data-original="imgs/代理.png" />
 	<img class="image-item" data-original="imgs/原型链1.png" />
