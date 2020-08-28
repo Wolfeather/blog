@@ -8,7 +8,24 @@
 
 ## BFC
 
+> BFC(Block formatting context)直译为"块级格式化上下文"。它是一个独立的渲染区域，只有Block-level box参与， 它规定了内部的Block-level Box如何布局，并且与这个区域外部毫不相干。
 
+> BFC是一个独立的布局环境，其中的元素布局是不受外界的影响，并且在一个BFC中，块盒与行盒（行盒由一行中所有的内联元素所组成）都会垂直的沿着其父元素的边框排列。
+
+总结：BFC会产生一个独立的布局，不受外界干扰。
+
+### BFC的产生方法
+
+1. float的值不是none
+2. position的值不是static/relative
+3. display的值是inline-block、table-cell、flex、table-caption或inline-flex
+4. overflow的值不是visible
+
+### BFC的作用
+
+1. **避免margin塌陷/重叠**：两个相邻元素处于同一个BFC时，margin会塌陷，只取最大值。
+2. **避免float元素的重叠**：非float元素部分会被float元素遮挡重叠。
+3. **清除浮动**：子元素都是float元素时，父元素高度会塌陷。
 
 ## 画一条0.5px的线
 
@@ -185,9 +202,50 @@ content padding border
 
 ### 三角形
 
+```css
+.triangle-demo {
+  height: 50px;
+  width: 50px;
+  border-left: 50px solid blue;
+  border-right: 50px solid green;
+  border-top: 50px solid yellow;
+  border-bottom: 50px solid red;
+}
+```
 
+[border1.png]
 
-### 正方形
+经过观察，四个border在边界时，以斜线划分，构成梯形。所以当内部高宽为0时，就变成了三角形。
+
+所以我们需要的条件：
+
+1. 宽高为0
+2. 所需border的宽
+3. 所需border的相邻border 且颜色为透明（transparent）
+
+```css
+.triangle-up{
+  height: 0;
+  width: 0;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 50px solid red;
+}
+```
+
+### 圆形
+
+关键在于`border-radius`：定义4个角的圆角属性 顺序为 左上、右上、右下、左下
+
+```css
+.circle1 {
+  margin-top: 50px;
+  background-color: red;
+  width: 100px;
+  height: 50px;
+  border-radius: 50px 50px 0 0;
+}
+```
 
 
 
