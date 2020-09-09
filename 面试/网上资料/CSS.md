@@ -31,9 +31,92 @@
 
 
 
+### CSS权重优先级
+
+!important>行内样式>ID>类、伪类、属性>标签名>继承>通配符
+
+我们先自己模拟一个权重
+
+| 选择器 | 权重 |
+| ------ | ---- |
+| 通配符 | 0    |
+| 标签|1 |
+|类/伪类/属性|10|
+|ID|100|
+|行内样式|1000|
+|!important|Infinity|
+
+然后举个🌰：
+
+```html
+<style type="text/css">
+  #myid { /* id选择器权重为100 */
+    background-color: blue;
+  }
+  #divid .myspan input { /* 权重为 100 + 10 + 1 = 111 */
+    background-color: black;
+  }
+  input[type="button"] { /* 权重为 10 */
+    color: white !important; /* 特例：!important权重为无穷大 */
+    background-color: pink; 
+  }
+  input.myclass { /* 权重为 1 + 10 = 11 */
+    color: black;
+  }
+</style>
+<span class="myspan">
+  <input type="button" id="myid" class="myclass" name="myname"
+         value="点我" style=" color: green;">
+  <!-- style样式的权重为1000 -->
+</span>
+```
+
+所以权重计算后得到的样式为：
+
+1. `background-color:black`(权重为111)
+2. `color:white`(权重为Infinity)
+
+
+
+
 ## link标签和import标签的区别
 
+```html
+<!-- link引入 -->
+<link rel="stylesheet" rev="stylesheet" href="CSS文件" type="text/css" media="all" />  
+<!-- import引入 -->
+<style type="text/css" media="screen">  
+@import url("CSS文件");  
+</style>
+```
 
+不难看出 两者是有区别的：
+
+1. link属于HMTL标签，直接在HTML中使用；@import属于css功能，只能在css文件，或者HTML中的`<style>`标签内使用。
+2. link标签除了加载CSS外，还可以加载其他事务，包括但不限于图片、媒体资源、RSS等；@import只能用作引入CSS。
+3. link引入的CSS，在页面载入时同时加载(还可以使用link的preload等)；@import需要页面载入后才开始加载。
+4. link是XHTML标签，无兼容问题；@import是在CSS2.1提出的，对低版本浏览器不兼容。
+5. link支持使用js控制DOM改变样式；而@import不支持(？)
+
+另外，`@import`有多种写法：
+
+```css
+@import 'style.css'; //Windows IE4/ NS4, Mac OS X IE5, Macintosh IE4/IE5/NS4不识别
+@import "style.css"; //Windows IE4/ NS4, Macintosh IE4/NS4不识别
+@import url(style.css); //Windows NS4, Macintosh NS4不识别
+@import url('style.css'); //Windows NS4, Mac OS X IE5, Macintosh IE4/IE5/NS4不识别
+@import url("style.css"); //Windows NS4, Macintosh NS4不识别
+```
+
+
+
+
+
+> 参考文献：
+>
+> https://www.cnblogs.com/my--sunshine/p/6872224.html
+>
+> https://www.cnblogs.com/zbo/archive/2010/11/17/1879590.html
 
 ## transition和animation的区别
 
@@ -117,15 +200,81 @@ absolute绝对定位后，用left,top对元素定位，定位点是元素的左�
 
 ## js动画和css3动画的差异性
 
+|      | 优点 | 缺点 |
+| ---- | -------- | ------ |
+| CSS3动画 | 1.性能好，浏览器会对CSS动画做一些优化；2.代码相对简单    | 1.控制不够灵活；2兼容性不好；3.滚动等效果无法实现   |
+| JS动画 | 1.控制灵活，可以单帧操作；2.基本无兼容问题 | 1.干扰主线程导致阻塞、会导致丢帧情况；2.代码复杂度高|
 
+
+
+
+> 参考文献：https://blog.csdn.net/linayangoo/article/details/86647506
 
 ## 块级元素和行元素
+
+### 块级元素(block elment)
+
+默认占一行高度（float除外）；块级元素一般可以嵌套块级元素/行内元素；块级元素一般作为容器出现。
+
+| 区别 | 块级元素                                           | 行内元素                                                     |
+| ---- | -------------------------------------------------- | ------------------------------------------------------------ |
+|      | 独占一行，默认情况下宽度填满父元素宽度(width:100%) | 不独占一行，与相邻的行内元素排在同一行。宽度根据内容变化。   |
+|      | 可以设置宽度`width`属性                            | 不能设置`width`属性                                          |
+|      | 可以设置`margin`、`padding`                        | 水平方向的margin、padding(-left、-right)会生效，垂直方向(-top、-bottom)的不会生效 |
+|      | `display:block`                                    | `display:inline`                                             |
 
 
 
 ## 多行元素的文本省略号
 
+### 单行的文本省略：
 
+```css
+.xxx{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+```
+
+### 多行的文本省略：
+
+#### 方法1：css
+
+```css
+.xxx{
+  overflow : hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+```
+
+PS：这种方式 只对webkit内核的浏览器有效
+
+#### 方法2：利用插件
+
+1.利用[Clamp.js](https://github.com/josephschmitt/Clamp.js)
+
+```js
+var xxx = document.getElementById("xxx");
+$clamp(xxx, {clamp: 3});
+```
+
+2.利用JQuery插件-[jQuery.dotdotdot](https://github.com/BeSite/jQuery.dotdotdot)
+
+```js
+document.addEventListener( "DOMContentLoaded", () => {
+   let wrapper = document.querySelector( "#element-to-truncate" );
+   let options = {
+      // Options go here
+   };
+   new Dotdotdot( wrapper, options );
+});
+```
+
+>参考文献：https://www.html.cn/archives/5206
 
 ## 怎么让一个元素消失？
 

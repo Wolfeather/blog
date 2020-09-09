@@ -4,28 +4,148 @@
  * @Author: wolfeather
  * @Date: 2020-08-26 13:45:14
  * @LastEditors: wolfeather
- * @LastEditTime: 2020-08-28 14:33:32
+ * @LastEditTime: 2020-09-08 16:00:19
 -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>Document</title>
 </head>
 
 <body>
   <div>
-    <div class="triangle-demo"></div>
-    <!-- <div class="triangle-up"></div> -->
+    <div class="text-container">
+      我和我亲爱的祖国一刻也不能分割，无论我走到哪里，都会有一首赞歌
+    </div>
+    <div class="container">
+      <div class="item" style="height: 140px"></div>
+      <div class="item" style="height: 190px"></div>
+      <div class="item" style="height: 170px"></div>
+      <div class="item" style="height: 120px"></div>
+      <div class="item" style="height: 160px"></div>
+      <div class="item" style="height: 180px"></div>
+      <div class="item" style="height: 140px"></div>
+      <div class="item" style="height: 150px"></div>
+      <div class="item" style="height: 170px"></div>
+      <div class="item" style="height: 170px"></div>
+    </div>
+    <!-- <div class="triangle-demo"></div>
     <div class="circle1"></div>
+    <div id="divid">
+      <span class="myspan">
+        <input type="button" id="myid" class="myclass" name="myname" value="点我" style=" color: green;" />
+      </span>
+    </div> -->
   </div>
   <style>
-    div{
-      margin:50px
+    .text-container{
+      /* height: 200px; */
+      width: 100px;
+      /* overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap; */
+
+      overflow:hidden;
+      text-overflow:ellipsis;
+      display:-webkit-box;
+      -webkit-line-clamp:2; 
+      -webkit-box-orient:vertical;
     }
+
+    .container {
+      display: flex;
+      flex-flow: column wrap;
+      align-content: space-between;
+      /* 容器必须有固定高度
+   * 且高度大于最高的列高 */
+      height: 1000px;
+
+      /* 非必须 */
+      background-color: #f7f7f7;
+      border-radius: 3px;
+      padding: 20px;
+      width: 60%;
+      margin: 40px auto;
+      counter-reset: items;
+    }
+
+    .item {
+      width: 32%;
+      /* 非必须 */
+      position: relative;
+      margin-bottom: 2%;
+      border-radius: 3px;
+      background-color: #a1cbfa;
+      border: 1px solid #4290e2;
+      box-shadow: 0 2px 2px rgba(0, 90, 250, 0.05),
+        0 4px 4px rgba(0, 90, 250, 0.05),
+        0 8px 8px rgba(0, 90, 250, 0.05),
+        0 16px 16px rgba(0, 90, 250, 0.05);
+      color: #fff;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+
+    /* 仅用于打印数字 */
+    .item::before {
+      counter-increment: items;
+      content: counter(items);
+    }
+
+    /* 将内容块重排为3列 */
+    .item:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .item:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .item:nth-child(3n) {
+      order: 3;
+    }
+
+    /* 强制换列 */
+    .container::before,
+    .container::after {
+      content: "";
+      flex-basis: 100%;
+      width: 0;
+      order: 2;
+    }
+
+
+
+    #myid {
+      /* id选择器权重为100 */
+      background-color: blue;
+    }
+
+    #divid .myspan input {
+      /* 权重为 100 + 10 + 1 = 111 */
+      background-color: black;
+    }
+
+    input[type="button"] {
+      /* 权重为 10 */
+      color: white !important;
+      /* 特例：!important权重为无穷大 */
+      background-color: pink;
+    }
+
+    input.myclass {
+      /* 权重为 1 + 10 = 11 */
+      color: black;
+    }
+
+    div {
+      margin: 50px;
+    }
+
     .triangle-demo {
       height: 50px;
       width: 50px;
