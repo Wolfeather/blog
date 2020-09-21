@@ -27,11 +27,66 @@
 2. **避免float元素的重叠**：非float元素部分会被float元素遮挡重叠。
 3. **清除浮动**：子元素都是float元素时，父元素高度会塌陷。
 
+## 边距重叠问题
+
+归纳到BFC中
+
+## 清除浮动
+
+### 1.clear
+
+在浮动元素的左(右)相邻元素的样式中添加`clear:right(left)`
+
+缺陷：只能单纯的清除浮动，浮动元素无法撑起父元素的高度
+
+### 2.父元素末尾添加清除浮动元素
+
+```html
+<div class="father">
+  <div class="other"></div>
+  <div class="float"></div>
+  <!-->....<!-->
+  <!-->下方添加一个没有内容的块级元素<!-->
+  <div class="clear-float"></div>
+</div>
+
+<style>
+  .clear-float{
+    clear:both;
+  }
+</style>
+```
+
+###  3.利用伪元素（clearfix）
+
+首先给父元素添加clearfix样式
+
+```html
+<div class="father clearfix">
+  <div class="other"></div>
+  <div class="float"></div>
+</div>
+<style>
+  .clearfix:after{
+    content:'.';
+    height:0;
+    display:block;
+    clear:both;
+  }
+</style>
+```
+
+### 4.通过产生BFC
+
+产生BFC的方式见上面的BFC中
+
+
+
 ## 画一条0.5px的线
 
+todo
 
-
-### CSS权重优先级
+## CSS权重优先级
 
 !important>行内样式>ID>类、伪类、属性>标签名>继承>通配符
 
@@ -288,21 +343,16 @@ visibility=hidden，opacity=0，display: none
 
 
 
-## 边距重叠问题
-
-归纳到BFC中
-
 
 
 ## position属性比较
 
+1. static：默认值，静态定位。浏览器会按照码源的顺序，决定每个元素的位置
+2. relative：相对定位，是相对于static的位置。即相对于默认位置进行偏移
+3. absolute：绝对定位，是相对于上一级的元素（一般是父元素）进行偏移
+4. fixed：固定定位，相对于浏览器窗口进行偏移，即定点基点为浏览器窗口，这样设置会导致元素不会随着页面的滑动而移动
 
-
-## 清除浮动
-
-
-
-## CSS选择器有哪些？优先级？
+> 参考文献：https://www.nowcoder.com/questionTerminal/fbef600be0f94192b87f42dc344485f7
 
 
 
