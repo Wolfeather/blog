@@ -639,3 +639,5 @@ Function.prototype.bind3 = function(newThis){
 	return bindFn
 }
 ```
+
+### 

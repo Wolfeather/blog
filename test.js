@@ -12,3 +12,11 @@ var tom = {
     age: 18
 };
 log(tom);
+
+(function (){
+  var a=b=2
+  c=3
+})()
+// console.log(a)
+console.log(b)
+console.log(c)
