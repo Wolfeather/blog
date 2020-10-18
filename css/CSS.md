@@ -489,3 +489,29 @@ fixed、relative、absolute、sticky、static、inherit
 ### less
 
 ### sass
+
+
+
+### 实现边框重叠
+
+```css
+table{
+  border-collapse:collapse; /* 为表格设置合并边框模型 */
+  text-align:center; /* 设置文字居中 */
+ } 
+ table tr{
+  border:none;
+ } 
+ table.tab td{
+  width:50px;
+  height:50px;
+  border:5px inset blue;
+ } 
+ table.tab td:hover{
+  border:5px solid red;
+  cursor: pointer;
+ }
+```
+
+
+
